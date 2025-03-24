@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MainView: View {
     @EnvironmentObject private var viewModel: ViewModel
+    @StateObject private var activityLogViewModel = ActivityLogManageViewModel()
     @StateObject var locationManager = LocationManager()
     
     var body: some View {
@@ -18,9 +19,11 @@ struct MainView: View {
                 
                 Spacer()
                 GotoActivityLogView()
+                
                 TextView()
             }
             .environmentObject(locationManager)
+            .environmentObject(activityLogViewModel)
             .padding()
         }
     }
@@ -136,9 +139,17 @@ private struct TextView: View {
 }
 
 private struct GotoActivityLogView: View {
+    @EnvironmentObject var activityLogManageViewModel: ActivityLogManageViewModel
+    
     var body: some View {
         NavigationLink {
-            ActivityLogView()
+            ActivityLogManageView(
+                activityLogViewModel: .init(
+                    activityLog: .init(id: UUID(), content: "")
+                )
+            )
+            .environmentObject(activityLogManageViewModel)
+            .navigationBarBackButtonHidden()
         } label: {
             Text("활동 일지 관리하기")
         }
@@ -151,5 +162,6 @@ struct Content_Previews: PreviewProvider {
     static var previews: some View {
         MainView()
             .environmentObject(ViewModel())
+            .environmentObject(ActivityLogManageViewModel())
     }
 }
