@@ -35,4 +35,8 @@ class ActivityLogManageViewModel: ObservableObject {
             self.activityLogs[index] = activityLog
         }
     }
+    
+    func getActivityLog(at date: Date) -> ActivityLog? {
+        return activityLogs.first(where: { $0.date == date }) ?? nil
+    }
 }
