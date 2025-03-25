@@ -10,7 +10,7 @@ import Foundation
 struct ActivityLog: Hashable {
     var id: UUID
     var content: String
-    var date: Date?
+    var date: String?
     var place: Address?
     var time: Time?
 }

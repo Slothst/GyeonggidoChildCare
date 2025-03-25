@@ -11,16 +11,18 @@ struct ActivityLogManageView: View {
     @StateObject var activityLogManageViewModel = ActivityLogManageViewModel()
     @StateObject var activityLogViewModel: ActivityLogViewModel
     @State var isCreateMode: Bool = true
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
             CustomNavigationBar(
                 leftBtnAction: {
-                    
+                    dismiss()
                 },
                 rightBtnAction: {
-                    if isCreateMode {
+                    if isCreateMode && activityLogViewModel.activityLog.content.isEmpty {
                         activityLogManageViewModel.addActivityLog(activityLogViewModel.activityLog)
+                        isCreateMode.toggle()
                     } else {
                         activityLogManageViewModel.updateActivityLog(activityLogViewModel.activityLog)
                     }
@@ -31,7 +33,7 @@ struct ActivityLogManageView: View {
                 .environmentObject(activityLogManageViewModel)
                 .padding(.leading, 20)
             
-            CalendarView()
+            CalendarView(isCreateMode: $isCreateMode)
                 .environmentObject(activityLogManageViewModel)
                 .padding(.leading, 20)
             
@@ -39,6 +41,7 @@ struct ActivityLogManageView: View {
                 activityLogviewModel: activityLogViewModel,
                 isCreateMode: $isCreateMode
             )
+            .environmentObject(activityLogManageViewModel)
             .environmentObject(activityLogViewModel)
         }
     }
@@ -55,26 +58,36 @@ private struct TitleView: View {
 }
 
 private struct CalendarView: View {
-    @EnvironmentObject private var activityLogviewModel: ActivityLogManageViewModel
+    @EnvironmentObject private var activityLogManageViewModel: ActivityLogManageViewModel
+    @Binding var isCreateMode: Bool
+    
+    fileprivate init(isCreateMode: Binding<Bool>) {
+        self._isCreateMode = isCreateMode
+    }
     
     var body: some View {
         Button {
-            activityLogviewModel.setIsCalendarDisplay(true)
+            activityLogManageViewModel.setIsCalendarDisplay(true)
         } label: {
             Text("활동 날짜 선택하기")
                 .font(.system(size: 16, weight: .bold))
         }
-        .popover(isPresented: $activityLogviewModel.isCalendarDisplay) {
+        .popover(isPresented: $activityLogManageViewModel.isCalendarDisplay) {
             DatePicker(
                 "",
-                selection: $activityLogviewModel.selectedDate,
+                selection: $activityLogManageViewModel.selectedDate,
                 displayedComponents: .date
             )
             .labelsHidden()
             .datePickerStyle(GraphicalDatePickerStyle())
             .frame(maxWidth: .infinity, alignment: .center)
-            .onChange(of: activityLogviewModel.selectedDate) { _ in
-                activityLogviewModel.setIsCalendarDisplay(false)
+            .onChange(of: activityLogManageViewModel.selectedDate) { _ in
+                activityLogManageViewModel.setIsCalendarDisplay(false)
+                if activityLogManageViewModel.selectedDateContent.isEmpty {
+                    isCreateMode = true
+                } else {
+                    isCreateMode = false
+                }
             }
         }
     }
@@ -82,6 +95,7 @@ private struct CalendarView: View {
 
 private struct ContentView: View {
     @ObservedObject private var activityLogviewModel: ActivityLogViewModel
+    @EnvironmentObject private var activityLogManageViewModel: ActivityLogManageViewModel
     @FocusState private var isContentFocused: Bool
     @Binding private var isCreateMode: Bool
     
@@ -102,7 +116,7 @@ private struct ContentView: View {
                 .padding(.leading, 10)
             
             ZStack(alignment: .topLeading) {
-                TextEditor(text: $activityLogviewModel.activityLog.content)
+                TextEditor(text: $activityLogManageViewModel.selectedDateContent)
                     .font(.system(size: 20))
                     .focused($isContentFocused)
                     .onAppear {
@@ -110,8 +124,11 @@ private struct ContentView: View {
                             isContentFocused = true
                         }
                     }
+                    .onChange(of: activityLogManageViewModel.selectedDate) { _ in
+                        activityLogManageViewModel.getActivityLog()
+                    }
                 
-                if activityLogviewModel.activityLog.content.isEmpty {
+                if activityLogManageViewModel.selectedDateContent.isEmpty {
                     Text("활동 내용을 입력해주세요.")
                         .font(.system(size: 16))
                         .foregroundStyle(Color.gray)

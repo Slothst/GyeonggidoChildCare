@@ -11,15 +11,18 @@ class ActivityLogManageViewModel: ObservableObject {
     @Published var selectedDate: Date
     @Published var activityLogs: [ActivityLog]
     @Published var isCalendarDisplay: Bool
+    @Published var selectedDateContent: String
     
     init(
         selectedDate: Date = Date(),
         activityLogs: [ActivityLog] = [],
-        isCalendarDisplay: Bool = false
+        isCalendarDisplay: Bool = false,
+        selectedDateContent: String = ""
     ) {
         self.selectedDate = selectedDate
         self.activityLogs = activityLogs
         self.isCalendarDisplay = isCalendarDisplay
+        self.selectedDateContent = selectedDateContent
     }
     
     func setIsCalendarDisplay(_ isDisplay: Bool) {
@@ -27,7 +30,11 @@ class ActivityLogManageViewModel: ObservableObject {
     }
     
     func addActivityLog(_ activityLog: ActivityLog) {
-        self.activityLogs.append(activityLog)
+        var activityLogWithDate = activityLog
+        activityLogWithDate.content = selectedDateContent
+        activityLogWithDate.date = selectedDate.formattedDateString
+        self.activityLogs.append(activityLogWithDate)
+        print(activityLogs)
     }
     
     func updateActivityLog(_ activityLog: ActivityLog) {
@@ -36,7 +43,11 @@ class ActivityLogManageViewModel: ObservableObject {
         }
     }
     
-    func getActivityLog(at date: Date) -> ActivityLog? {
-        return activityLogs.first(where: { $0.date == date }) ?? nil
+    func getActivityLog() {
+        if let activityLog = activityLogs.first(where: { $0.date == selectedDate.formattedDateString })?.content {
+            selectedDateContent = activityLog
+        } else {
+            selectedDateContent = ""
+        }
     }
 }
