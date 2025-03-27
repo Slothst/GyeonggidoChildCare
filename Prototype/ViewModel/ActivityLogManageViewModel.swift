@@ -12,17 +12,20 @@ class ActivityLogManageViewModel: ObservableObject {
     @Published var activityLogs: [ActivityLog]
     @Published var isCalendarDisplay: Bool
     @Published var selectedDateContent: String
+    @Published var shouldDismissKeyboard: Bool
     
     init(
         selectedDate: Date = Date(),
         activityLogs: [ActivityLog] = [],
         isCalendarDisplay: Bool = false,
-        selectedDateContent: String = ""
+        selectedDateContent: String = "",
+        shouldDismissKeyboard: Bool = false
     ) {
         self.selectedDate = selectedDate
         self.activityLogs = activityLogs
         self.isCalendarDisplay = isCalendarDisplay
         self.selectedDateContent = selectedDateContent
+        self.shouldDismissKeyboard = shouldDismissKeyboard
     }
     
     func setIsCalendarDisplay(_ isDisplay: Bool) {

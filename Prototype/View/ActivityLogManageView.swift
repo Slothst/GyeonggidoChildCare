@@ -24,12 +24,14 @@ struct ActivityLogManageView: View {
                     if isCreateMode && activityLogViewModel.activityLog.content.isEmpty {
                         activityLogManageViewModel.addActivityLog(activityLogViewModel.activityLog)
                         showAlert = true
+                        activityLogManageViewModel.shouldDismissKeyboard = true
                         
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                             isCreateMode.toggle()
                         }
                     } else {
                         activityLogManageViewModel.updateActivityLog(activityLogViewModel.activityLog)
+                        activityLogManageViewModel.shouldDismissKeyboard = true
                         DispatchQueue.main.async {
                             showAlert = true
                         }
@@ -47,11 +49,9 @@ struct ActivityLogManageView: View {
                 .padding(.leading, 20)
             
             ContentView(
-                activityLogviewModel: activityLogViewModel,
                 isCreateMode: $isCreateMode
             )
             .environmentObject(activityLogManageViewModel)
-            .environmentObject(activityLogViewModel)
         }
         .alert("", isPresented: $showAlert) {
             Button("확인", role: .cancel) {
@@ -109,16 +109,13 @@ private struct CalendarView: View {
 }
 
 private struct ContentView: View {
-    @ObservedObject private var activityLogviewModel: ActivityLogViewModel
     @EnvironmentObject private var activityLogManageViewModel: ActivityLogManageViewModel
     @FocusState private var isContentFocused: Bool
     @Binding private var isCreateMode: Bool
     
     fileprivate init(
-        activityLogviewModel: ActivityLogViewModel,
         isCreateMode: Binding<Bool>
     ) {
-        self.activityLogviewModel = activityLogviewModel
         self._isCreateMode = isCreateMode
     }
     
@@ -135,14 +132,25 @@ private struct ContentView: View {
                     .font(.system(size: 20))
                     .focused($isContentFocused)
                     .onAppear {
-                        if isCreateMode || activityLogManageViewModel.selectedDateContent.isEmpty {
+                        if isCreateMode {
                             isContentFocused = true
-                        } else {
-                            isContentFocused = false
                         }
                     }
                     .onChange(of: activityLogManageViewModel.selectedDate) { _ in
                         activityLogManageViewModel.getActivityLog()
+                        
+                        if activityLogManageViewModel.selectedDateContent.isEmpty {
+                            isContentFocused = true
+                        } else {
+                            isContentFocused = false
+                        }
+                        
+                    }
+                    .onChange(of: activityLogManageViewModel.shouldDismissKeyboard) { newValue in
+                        if newValue {
+                            isContentFocused = false
+                            activityLogManageViewModel.shouldDismissKeyboard = false
+                        }
                     }
                 
                 if activityLogManageViewModel.selectedDateContent.isEmpty {
