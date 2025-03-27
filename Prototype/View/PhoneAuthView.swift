@@ -43,28 +43,35 @@ struct PhoneAuthView: View {
                 
                 Spacer()
             }
+            .onChange(of: phoneAuthViewModel.isVerified) { newValue in
+                if newValue {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        showAlert = true
+                    }
+                }
+            }
             .alert("인증 성공", isPresented: $showAlert) {
                 Button("확인") {
+                    phoneAuthViewModel.saveUserId()
                     navigateToContentView = true
                 }
             } message: {
                 Text("휴대폰 인증이 완료되었습니다.")
             }
-            .onChange(of: phoneAuthViewModel.isVerified) { newValue in
-                if newValue {
-                    showAlert = true
-                }
-            }
             .background(
-                NavigationLink(
-                    destination: MainView()
-                        .environmentObject(ViewModel())
-                        .navigationBarBackButtonHidden(),
-                    isActive: $navigateToContentView,
-                    label: {
-                        EmptyView()
-                    })
-                .hidden()
+                Group {
+                    if navigateToContentView {
+                        NavigationLink(
+                            destination: MainView()
+                                .environmentObject(ViewModel())
+                                .navigationBarBackButtonHidden(),
+                            isActive: $navigateToContentView,
+                            label: {
+                                EmptyView()
+                            })
+                        .hidden()
+                    }
+                }
             )
         }
     }

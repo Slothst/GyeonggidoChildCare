@@ -15,16 +15,54 @@ struct MainView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
+                TimeProgressView()
+                
                 StartButtonView()
                 
                 Spacer()
                 GotoActivityLogView()
                 
-                TextView()
+//                TextView()
             }
             .environmentObject(locationManager)
             .environmentObject(activityLogViewModel)
             .padding()
+        }
+    }
+}
+
+private struct TimeProgressView: View {
+    @EnvironmentObject private var viewModel: ViewModel
+    @State private var elapsedMinutes: Int = 0
+    @State private var isTimerRunning: Bool = false
+    private let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
+    
+    var body: some View {
+        Text("\(elapsedMinutes / 60)시간 \(String(format: "%02d", elapsedMinutes % 60))분")
+            .font(.largeTitle)
+            .onAppear {
+                updateElapsedMinutes()
+                isTimerRunning = viewModel.isStarted
+            }
+            .onReceive(timer) { _ in
+                if isTimerRunning {
+                    updateElapsedMinutes()
+                }
+            }
+            .onChange(of: viewModel.isStarted) { newValue in
+                if newValue {
+                    updateElapsedMinutes()
+                    isTimerRunning = true
+                } else {
+                    isTimerRunning = false
+                }
+            }
+    }
+    
+    private func updateElapsedMinutes() {
+        if let startDate = viewModel.startDate {
+            let interval = Date().timeIntervalSince(startDate)
+            elapsedMinutes = Int(interval) / 60
         }
     }
 }
@@ -39,9 +77,6 @@ private struct StartButtonView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("시작 가능 시간 06:00 - 22:00")
-                .font(.headline)
-            
             Button {
                 viewModel.setIsDisplayAlert(true)
             } label: {
@@ -80,6 +115,9 @@ private struct StartButtonView: View {
         .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { _ in
             checkButtonStatus() // 1분마다 시간 체크
         }
+        
+        Text("시작 가능 시간 06:00 - 22:00")
+            .font(.headline)
     }
     
     private func checkButtonStatus() {

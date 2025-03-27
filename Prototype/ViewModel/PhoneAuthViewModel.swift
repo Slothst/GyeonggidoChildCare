@@ -46,10 +46,12 @@ class PhoneAuthViewModel: ObservableObject {
             }
             self.isVerified = true
             
-            if let user = Auth.auth().currentUser {
-                UserDefaults.standard.setValue(user.uid, forKey: "user_id")
-            }
         }
-        
+    }
+    
+    func saveUserId() {
+        if let user = Auth.auth().currentUser {
+            UserDefaults.standard.setValue(user.uid, forKey: "user_id")
+        }
     }
 }
