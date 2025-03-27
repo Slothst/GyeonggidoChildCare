@@ -34,12 +34,13 @@ class ActivityLogManageViewModel: ObservableObject {
         activityLogWithDate.content = selectedDateContent
         activityLogWithDate.date = selectedDate.formattedDateString
         self.activityLogs.append(activityLogWithDate)
-        print(activityLogs)
     }
     
     func updateActivityLog(_ activityLog: ActivityLog) {
-        if let index = activityLogs.firstIndex(of: activityLog) {
-            self.activityLogs[index] = activityLog
+        if let index = activityLogs.firstIndex(where: { $0.date == selectedDate.formattedDateString }) {
+            var al = activityLogs[index]
+            al.content = selectedDateContent
+            self.activityLogs[index] = al
         }
     }
     

@@ -60,7 +60,6 @@ final class LocationManager: NSObject, CLLocationManagerDelegate, ObservableObje
             print("Location authorizedAlways")
             
         case .authorizedWhenInUse:
-            print("Location authorized when in use")
             address.latitude = manager.location?.coordinate.latitude ?? 0
             address.longitude = manager.location?.coordinate.longitude ?? 0
         

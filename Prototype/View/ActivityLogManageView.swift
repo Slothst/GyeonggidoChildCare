@@ -8,9 +8,10 @@
 import SwiftUI
 
 struct ActivityLogManageView: View {
-    @StateObject var activityLogManageViewModel = ActivityLogManageViewModel()
+    @EnvironmentObject var activityLogManageViewModel: ActivityLogManageViewModel
     @StateObject var activityLogViewModel: ActivityLogViewModel
-    @State var isCreateMode: Bool = true
+    @State private var isCreateMode: Bool = true
+    @State private var showAlert = false
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -22,12 +23,20 @@ struct ActivityLogManageView: View {
                 rightBtnAction: {
                     if isCreateMode && activityLogViewModel.activityLog.content.isEmpty {
                         activityLogManageViewModel.addActivityLog(activityLogViewModel.activityLog)
-                        isCreateMode.toggle()
+                        showAlert = true
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            isCreateMode.toggle()
+                        }
                     } else {
                         activityLogManageViewModel.updateActivityLog(activityLogViewModel.activityLog)
+                        DispatchQueue.main.async {
+                            showAlert = true
+                        }
                     }
                 },
-                rightBtnType: isCreateMode ? .create : .complete)
+                rightBtnType: isCreateMode ? .create : .complete
+            )
             
             TitleView()
                 .environmentObject(activityLogManageViewModel)
@@ -43,6 +52,12 @@ struct ActivityLogManageView: View {
             )
             .environmentObject(activityLogManageViewModel)
             .environmentObject(activityLogViewModel)
+        }
+        .alert("", isPresented: $showAlert) {
+            Button("확인", role: .cancel) {
+            }
+        } message: {
+            Text(isCreateMode ? "활동 일지를 생성했습니다." : "활동 일지를 수정했습니다.")
         }
     }
 }
@@ -120,8 +135,10 @@ private struct ContentView: View {
                     .font(.system(size: 20))
                     .focused($isContentFocused)
                     .onAppear {
-                        if isCreateMode {
+                        if isCreateMode || activityLogManageViewModel.selectedDateContent.isEmpty {
                             isContentFocused = true
+                        } else {
+                            isContentFocused = false
                         }
                     }
                     .onChange(of: activityLogManageViewModel.selectedDate) { _ in
