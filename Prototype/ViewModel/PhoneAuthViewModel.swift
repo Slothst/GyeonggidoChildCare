@@ -15,8 +15,6 @@ class PhoneAuthViewModel: ObservableObject {
     @Published var isVerified = false
     @Published var errorMessage: String?
     
-    
-    
     // 전화번호로 인증 코드 요청
     func sendCode() {
         Auth.auth().settings?.isAppVerificationDisabledForTesting = false // 테스트 모드 비활성화

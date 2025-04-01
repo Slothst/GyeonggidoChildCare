@@ -64,6 +64,7 @@ struct PhoneAuthView: View {
                         NavigationLink(
                             destination: MainView()
                                 .environmentObject(ViewModel())
+                                .environmentObject(UserViewModel(user: .init(userId: UserDefaults.standard.string(forKey: "user_id") ?? "")))
                                 .navigationBarBackButtonHidden(),
                             isActive: $navigateToContentView,
                             label: {

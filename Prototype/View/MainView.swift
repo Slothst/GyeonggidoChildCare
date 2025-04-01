@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MainView: View {
     @EnvironmentObject private var viewModel: ViewModel
+    @EnvironmentObject private var userViewModel: UserViewModel
     @StateObject private var activityLogViewModel = ActivityLogManageViewModel()
     @StateObject var locationManager = LocationManager()
     
@@ -18,6 +19,7 @@ struct MainView: View {
                 TimeProgressView()
                 
                 StartButtonView()
+                    .environmentObject(userViewModel)
                 
                 Spacer()
                 GotoActivityLogView()
@@ -69,6 +71,7 @@ private struct TimeProgressView: View {
 
 private struct StartButtonView: View {
     @EnvironmentObject private var viewModel: ViewModel
+    @EnvironmentObject private var userViewModel: UserViewModel
     @EnvironmentObject private var locationManager: LocationManager
     @State private var isDisabled: Bool = false
     private let startHour = 6
