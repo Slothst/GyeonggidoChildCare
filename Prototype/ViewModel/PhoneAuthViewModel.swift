@@ -7,13 +7,47 @@
 
 import Foundation
 import FirebaseAuth
+import Combine
 
 class PhoneAuthViewModel: ObservableObject {
+    
+    let network: NetworkService
+    @Published var user: User?
+    
     @Published var phoneNumber: String = ""
     @Published var verificationId: String?
     @Published var verificationCode: String = ""
     @Published var isVerified = false
     @Published var errorMessage: String?
+    
+    init(network: NetworkService) {
+        self.network = network
+    }
+    
+    var subscription = Set<AnyCancellable>()
+    
+    func checkIsValidPhoneNumber() {
+        let resource: Resource<User> = Resource(
+            base: APIInfo.baseURL,
+            path: "users/\(phoneNumber)",
+            params: [:],
+            header: [:]
+        )
+        
+        network.load(resource)
+            .receive(on: RunLoop.main)
+            .sink { completion in
+                switch completion {
+                case .failure(let error):
+                    print("error: \(error)")
+                case .finished:
+                    break
+                }
+            } receiveValue: { user in
+                self.user = user
+                print(user)
+            }.store(in: &subscription)
+    }
     
     // 전화번호로 인증 코드 요청
     func sendCode() {

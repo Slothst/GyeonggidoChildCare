@@ -19,7 +19,6 @@ struct MainView: View {
                 TimeProgressView()
                 
                 StartButtonView()
-                    .environmentObject(userViewModel)
                 
                 Spacer()
                 GotoActivityLogView()
@@ -71,7 +70,6 @@ private struct TimeProgressView: View {
 
 private struct StartButtonView: View {
     @EnvironmentObject private var viewModel: ViewModel
-    @EnvironmentObject private var userViewModel: UserViewModel
     @EnvironmentObject private var locationManager: LocationManager
     @State private var isDisabled: Bool = false
     private let startHour = 6

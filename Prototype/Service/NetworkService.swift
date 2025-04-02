@@ -24,6 +24,7 @@ struct NetworkService {
     
     func load<T>(_ resource: Resource<T>) -> AnyPublisher<T, Error> {
         guard let request = resource.urlRequest else {
+            print("2")
             return .fail(NetworkError.invalidRequset)
         }
         
@@ -31,7 +32,7 @@ struct NetworkService {
             .dataTaskPublisher(for: request)
             .tryMap { result -> Data in
                 guard let response = result.response as? HTTPURLResponse,
-                      (200...300).contains(response.statusCode)
+                      (200..<300).contains(response.statusCode)
                 else {
                     let response = result.response as? HTTPURLResponse
                     let statusCode = response?.statusCode ?? -1

@@ -6,11 +6,15 @@
 //
 
 import SwiftUI
+import Combine
 
 struct PhoneAuthView: View {
-    @StateObject private var phoneAuthViewModel = PhoneAuthViewModel()
+    @StateObject private var phoneAuthViewModel = PhoneAuthViewModel(network: .init(configuration: .default))
     @State private var showAlert = false
     @State private var navigateToContentView = false
+    
+    var subscriptions = Set<AnyCancellable>()
+    var user: User?
     
     var body: some View {
         NavigationView {
@@ -20,7 +24,11 @@ struct PhoneAuthView: View {
                     .padding()
                 
                 Button("인증 코드 받기") {
-                    phoneAuthViewModel.sendCode()
+                    phoneAuthViewModel.checkIsValidPhoneNumber()
+                    
+                    if phoneAuthViewModel.user != nil {
+                        phoneAuthViewModel.sendCode()
+                    }
                 }
                 .disabled(phoneAuthViewModel.phoneNumber.isEmpty)
                 
@@ -61,16 +69,18 @@ struct PhoneAuthView: View {
             .background(
                 Group {
                     if navigateToContentView {
-                        NavigationLink(
-                            destination: MainView()
-                                .environmentObject(ViewModel())
-                                .environmentObject(UserViewModel(user: .init(userId: UserDefaults.standard.string(forKey: "user_id") ?? "")))
-                                .navigationBarBackButtonHidden(),
-                            isActive: $navigateToContentView,
-                            label: {
-                                EmptyView()
-                            })
-                        .hidden()
+                        if let user = phoneAuthViewModel.user {
+                            NavigationLink(
+                                destination: MainView()
+                                    .environmentObject(ViewModel())
+                                    .environmentObject(UserViewModel(user: user))
+                                    .navigationBarBackButtonHidden(),
+                                isActive: $navigateToContentView,
+                                label: {
+                                    EmptyView()
+                                })
+                            .hidden()
+                        }
                     }
                 }
             )
