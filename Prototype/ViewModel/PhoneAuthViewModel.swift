@@ -24,9 +24,9 @@ class PhoneAuthViewModel: ObservableObject {
         self.network = network
     }
     
-    var subscription = Set<AnyCancellable>()
+    var subscriptions = Set<AnyCancellable>()
     
-    func checkIsValidPhoneNumber() {
+    func fetchPhoneNumber() {
         let resource: Resource<User> = Resource(
             base: APIInfo.baseURL,
             path: "users/\(phoneNumber)",
@@ -43,10 +43,9 @@ class PhoneAuthViewModel: ObservableObject {
                 case .finished:
                     break
                 }
-            } receiveValue: { user in
-                self.user = user
-                print(user)
-            }.store(in: &subscription)
+            } receiveValue: { [weak self] user in
+                self?.user = user
+            }.store(in: &subscriptions)
     }
     
     // 전화번호로 인증 코드 요청

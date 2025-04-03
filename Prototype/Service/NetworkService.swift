@@ -24,7 +24,6 @@ struct NetworkService {
     
     func load<T>(_ resource: Resource<T>) -> AnyPublisher<T, Error> {
         guard let request = resource.urlRequest else {
-            print("2")
             return .fail(NetworkError.invalidRequset)
         }
         

@@ -24,10 +24,12 @@ struct PhoneAuthView: View {
                     .padding()
                 
                 Button("인증 코드 받기") {
-                    phoneAuthViewModel.checkIsValidPhoneNumber()
+                    phoneAuthViewModel.fetchPhoneNumber()
                     
-                    if phoneAuthViewModel.user != nil {
-                        phoneAuthViewModel.sendCode()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        if phoneAuthViewModel.user != nil {
+                            phoneAuthViewModel.sendCode()
+                        }
                     }
                 }
                 .disabled(phoneAuthViewModel.phoneNumber.isEmpty)
